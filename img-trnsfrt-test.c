@@ -104,7 +104,7 @@ char txt[] ="749440181.510443 9.4436 smtp 1491 58 22 133.144.224.2 SF \
 void main(){
     int udb_buf_count,udp_buf_len;
     char ** buffers = to_udp_buffer(txt,strlen(txt),200,75,123456789,500, 
-                    &udb_buf_count,&udp_buf_len);
+                    &udb_buf_count,&udp_buf_len,0);
     seq_img img;
     partial_img p_img;
     read_from_udp(&p_img,buffers[0],udp_buf_len);

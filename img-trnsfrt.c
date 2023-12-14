@@ -17,7 +17,7 @@ int add_partial_img(seq_img* img, partial_img * part_img){
 }
 
 char ** to_udp_buffer(char * img_buffer,int buffer_len,int x,int y, time_t timestamp, int packet_size,
-                        int * udp_buf_cout, int * udp_buf_len){
+                        int * udp_buf_cout, int * udp_buf_len,u_int8_t id){
     int udp_packet_size =(1+8 +2+2+2+2) +packet_size;
     int packet_count=  buffer_len/udp_packet_size;
     if (buffer_len%udp_packet_size!=0){
@@ -47,23 +47,27 @@ char ** to_udp_buffer(char * img_buffer,int buffer_len,int x,int y, time_t times
         cur_buf_index+=2;
         memcpy(part_imgs[i]+cur_buf_index,(uint16_t*)&i,2);
         cur_buf_index+=2;
+        memcpy(part_imgs[i]+cur_buf_index,(uint8_t*)&id,1);
+        cur_buf_index+=1;
         memcpy(part_imgs[i]+cur_buf_index,img_buffer+i*packet_size,packet_size);
-        for (int j=0;j<packet_size;j++){
+        /**===debug=====
+         for (int j=0;j<packet_size;j++){
             printf("%c",*(part_imgs[i]+cur_buf_index+j));
         }
         printf("\n");
         for (int j=0;j<packet_size;j++){
             printf("%c",*(img_buffer+i*packet_size+j));
         }
-        printf("\n\n%d,%d\n\n\n",i,packet_count);
+        printf("\n\n%d,%d\n\n\n",i,packet_count);**/
         cur_buf_index+=packet_size;
         
         
     }
+    /*
     for (int j=0;j<packet_size;j++){
-            printf("%c",*(part_imgs[0]+HEADER_LEN_ANY+HEADER_LEN_IMG+j));
-        }
-    printf("\n");
+         printf("%c",*(part_imgs[0]+HEADER_LEN_ANY+HEADER_LEN_IMG+j));
+    }
+    printf("\n");*/
     return part_imgs;
 }
 
@@ -84,6 +88,8 @@ int  read_from_udp(partial_img* partial, char * buffer,int buffer_len){
     cur_buf_index+=2;
     partial->seq_num=*((uint16_t *)(buffer+cur_buf_index));
     cur_buf_index+=2;
+    partial->id=*((uint8_t *)(buffer+cur_buf_index));
+    cur_buf_index+=1;
     partial->img_part=malloc(buffer_len-cur_buf_index);
     if (!partial->img_part){
         perror("ERROR : MALLOC ERROR : @ read_from_udp");
